@@ -1,0 +1,2258 @@
+{
+  "name": "Barbearia WhatsApp - Multi-barbearia v2",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "field": "cronExpression",
+              "expression": "0 7-20 * * *"
+            }
+          ]
+        }
+      },
+      "id": "979bf16d-1bd1-4699-ac3b-dfa909838893",
+      "name": "Lembretes (a cada hora)",
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        16816,
+        9600
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "bfefc241-515e-45e9-8f78-0de84a2e05e0",
+              "name": "telefone",
+              "value": "={{ ($json.body.data?.key?.remoteJid || '').split('@')[0] }}",
+              "type": "string"
+            },
+            {
+              "id": "db0f074e-8e2e-48f3-aa0e-3583c5c3c66f",
+              "name": "instancia",
+              "value": "={{ $json.body.instance || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "0f7c6034-0bde-429d-8886-fc49e8d73fa5",
+              "name": "msgId",
+              "value": "={{ $json.body.data?.key?.id || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "0666599b-9b5c-4961-8b24-e0c765fbca30",
+              "name": "fromMe",
+              "value": "={{ !!$json.body.data?.key?.fromMe }}",
+              "type": "boolean"
+            },
+            {
+              "id": "20e18c67-8d69-4a96-b950-c2e6d8f6440e",
+              "name": "grupo",
+              "value": "={{ ($json.body.data?.key?.remoteJid || '').includes('@g.us') }}",
+              "type": "boolean"
+            },
+            {
+              "id": "60b051c4-1dc7-4136-a431-785b3727fadd",
+              "name": "tipo",
+              "value": "={{ $json.body.data?.messageType || '' }}",
+              "type": "string"
+            },
+            {
+              "id": "9936b840-7220-4c93-bfad-86f8b0db97e5",
+              "name": "texto",
+              "value": "={{ $json.body.data?.message?.conversation || $json.body.data?.message?.extendedTextMessage?.text || '' }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "354098d7-6e52-4549-8413-0c6ce29e65e0",
+      "name": "Dados",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        17056,
+        8400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "6fa74ec2-a9ae-44f8-9078-c4685f6e83e3",
+              "leftValue": "={{ !$json.fromMe && !$json.grupo && $json.telefone !== '' && $json.instancia !== '' }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "a58f7647-dda5-4e07-be85-3b33c5ee4af2",
+      "name": "Ignorar próprias/grupos",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        17504,
+        8400
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "COLE_AQUI_O_ID_DA_SUA_PLANILHA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Barbearias",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Instancia",
+              "lookupValue": "={{ $('Dados').first().json.instancia }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "8b0d9be1-5fee-43a0-9a09-04f25b7250c2",
+      "name": "Ler barbearia",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        17712,
+        8400
+      ],
+      "alwaysOutputData": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "COLE_AQUI_O_ID_DA_SUA_PLANILHA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Barbeiros",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Instancia",
+              "lookupValue": "={{ $('Dados').first().json.instancia }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "06399cdf-464a-4a81-9679-ca8531606318",
+      "name": "Ler barbeiros",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        17936,
+        8400
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "COLE_AQUI_O_ID_DA_SUA_PLANILHA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Admins",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Instancia",
+              "lookupValue": "={{ $('Dados').first().json.instancia }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "81620d5c-b1e5-44b9-b93e-3dae8da42f79",
+      "name": "Ler admins",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        18160,
+        8400
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "COLE_AQUI_O_ID_DA_SUA_PLANILHA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Clientes",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Instancia",
+              "lookupValue": "={{ $('Dados').first().json.instancia }}"
+            },
+            {
+              "lookupColumn": "Telefone",
+              "lookupValue": "={{ $('Dados').first().json.telefone }}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "7c4d3539-a9f2-409d-bb61-244ebbea0bf1",
+      "name": "Buscar cliente",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        18384,
+        8400
+      ],
+      "alwaysOutputData": true,
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "const d = $('Dados').first().json;\n// normaliza cabeçalhos: minúsculo e sem espaço/underscore (aceita calendarId, calendarid, etc.)\nconst norm = (r) => { const o = {}; for (const k of Object.keys(r || {})) o[k.toLowerCase().replace(/[\\s_]/g, '')] = r[k]; return o; };\nconst rows = (n) => { try { return $(n).all().map(i => norm(i.json)).filter(r => Object.keys(r).length); } catch (e) { return []; } };\nconst nao = (v) => String(v ?? 'sim').trim().toLowerCase().startsWith('n');\nconst bar = rows('Ler barbearia')[0];\nif (!bar || nao(bar.ativa ?? bar.ativo)) return [];            // instância não cadastrada ou desativada\nif (!bar.evolutionurl || !bar.apikey) return [];                 // sem URL/apikey na planilha\nconst barbeiros = rows('Ler barbeiros')\n  .filter(b => (b.calendarid) && !nao(b.ativa ?? b.ativo))\n  .map((b, i) => ({ n: i + 1, nome: b.barbeiro || b.nome, calendarId: String(b.calendarid).trim() }));\nconst admins = rows('Ler admins').map(a => String(a.telefone || '').replace(/\\D/g, '')).filter(Boolean);\nconst row = norm($('Buscar cliente').first()?.json || {});\nconst existe = row.telefone !== undefined && row.telefone !== '';\nlet statusBase = existe ? String(row.status || 'ativo').trim().toLowerCase() : 'novo';\nif (!['ativo', 'aguardando_nome', 'novo'].includes(statusBase)) statusBase = 'ativo';\nreturn [{ json: {\n  tipo: d.tipo, statusBase, isAdmin: admins.includes(d.telefone), nomeCliente: row.nome || '',\n  instancia: d.instancia, telefone: d.telefone,\n  evolutionUrl: String(bar.evolutionurl).trim().replace(/\\/+$/, ''), apikey: String(bar.apikey).trim(),\n  barbeariaNome: bar.nome, horarios: bar.horarios || '', servicos: bar.servicos || '',\n  barbeiros, barbeirosTexto: barbeiros.map(b => `${b.n}) ${b.nome}`).join(', '), adminPhones: admins } }];"
+      },
+      "id": "8dd7f107-ca70-46b6-a0d6-53aad06b57df",
+      "name": "Contexto",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        18592,
+        8400
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "280054a1-3a17-4ae7-8f1f-8f998caeb1ff",
+              "leftValue": "={{ $json.tipo }}",
+              "rightValue": "audioMessage",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "ffb8a2bd-f200-4cb7-9031-6be238ecbd8d",
+      "name": "É áudio?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        18816,
+        8400
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $('Contexto').first().json.evolutionUrl }}/chat/getBase64FromMediaMessage/{{ $('Contexto').first().json.instancia }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $('Contexto').first().json.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ message: { key: { id: $('Dados').first().json.msgId } }, convertToMp4: false }) }}",
+        "options": {}
+      },
+      "id": "72fb0354-2d87-417b-8dba-7ecccb3f7614",
+      "name": "Baixar áudio",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        19040,
+        8256
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "toBinary",
+        "sourceProperty": "base64",
+        "options": {
+          "fileName": "audio.ogg",
+          "mimeType": "audio/ogg"
+        }
+      },
+      "id": "d1b272b0-1e70-438c-9a2e-b53e613a2076",
+      "name": "Base64 para arquivo",
+      "type": "n8n-nodes-base.convertToFile",
+      "typeVersion": 1.1,
+      "position": [
+        19264,
+        8256
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "https://api.groq.com/openai/v1/audio/transcriptions",
+        "authentication": "predefinedCredentialType",
+        "nodeCredentialType": "groqApi",
+        "sendBody": true,
+        "contentType": "multipart-form-data",
+        "bodyParameters": {
+          "parameters": [
+            {
+              "parameterType": "formBinaryData",
+              "name": "file",
+              "inputDataFieldName": "data"
+            },
+            {
+              "name": "model",
+              "value": "whisper-large-v3-turbo"
+            },
+            {
+              "name": "language",
+              "value": "pt"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b8487510-b846-4632-9661-4b87fb074059",
+      "name": "Transcrever (Groq Whisper)",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        19472,
+        8256
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "be0fd9e5-7e1f-446b-979a-3bef6429d42d",
+              "name": "mensagem",
+              "value": "={{ ($json.text ?? $('Dados').first().json.texto ?? '').toString().trim() }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "afd70dc2-5284-43c4-8b2f-e7f324a65880",
+      "name": "Mensagem",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        19696,
+        8400
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Contexto').first().json;\nconst msg = $('Mensagem').first().json.mensagem || '';\nlet status = ctx.statusBase;\nif (ctx.isAdmin) status = 'admin';\nif (!msg) status = 'vazio';\nconst saudacao = /^(oi+|ol[aá]|opa|e a[ií]|bom dia|boa tarde|boa noite|menu|ajuda)[!. ]*$/i.test(msg);\nreturn [{ json: { ...ctx, status, saudacao, mensagem: msg } }];"
+      },
+      "id": "ccaac4c8-63bf-4181-991e-991939fced8d",
+      "name": "Definir status",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        19920,
+        8400
+      ]
+    },
+    {
+      "parameters": {
+        "rules": {
+          "values": [
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "706fe46b-191a-4cc7-bffc-c4817719a12e",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "ativo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "ativo"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "44fd3f85-1963-4b72-95c9-6b8f3c48624b",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "aguardando_nome",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "aguardando_nome"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "c18d4a62-e0d2-407b-bb13-097956b1c1f0",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "novo",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "novo"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "adf7fa8a-4120-49de-a81d-cd9cbadb1851",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "vazio",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "vazio"
+            },
+            {
+              "conditions": {
+                "options": {
+                  "caseSensitive": true,
+                  "leftValue": "",
+                  "typeValidation": "loose",
+                  "version": 2
+                },
+                "conditions": [
+                  {
+                    "id": "552ce5fd-02a2-45ca-be7e-6b4dec3081ab",
+                    "leftValue": "={{ $json.status }}",
+                    "rightValue": "admin",
+                    "operator": {
+                      "type": "string",
+                      "operation": "equals"
+                    }
+                  }
+                ],
+                "combinator": "and"
+              },
+              "renameOutput": true,
+              "outputKey": "admin"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "f2934bdf-58ea-4e24-a26d-c36d1cd38726",
+      "name": "Status",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 3.2,
+      "position": [
+        20144,
+        8400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "COLE_AQUI_O_ID_DA_SUA_PLANILHA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Clientes",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Instancia": "={{ $('Dados').first().json.instancia }}",
+            "Telefone": "={{ $('Dados').first().json.telefone }}",
+            "Status": "aguardando_nome",
+            "Cadastrado em": "={{ $now.toFormat('dd/LL/yyyy HH:mm') }}"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Instancia",
+              "displayName": "Instancia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Telefone",
+              "displayName": "Telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Cadastrado em",
+              "displayName": "Cadastrado em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "dd025403-55ec-4fb9-a1b5-e9e21fdb6737",
+      "name": "Cadastrar cliente",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        20384,
+        8736
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "3157060e-4164-4be0-8366-5da5d0038148",
+              "name": "numero",
+              "value": "={{ $('Dados').first().json.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "6c1d4016-8de7-4643-b262-7a0589614d8a",
+              "name": "instancia",
+              "value": "={{ $('Contexto').first().json.instancia }}",
+              "type": "string"
+            },
+            {
+              "id": "dd1ab4c2-4b06-4c94-86d4-63b83cbb156e",
+              "name": "evolutionUrl",
+              "value": "={{ $('Contexto').first().json.evolutionUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "e76dff61-5432-4cb3-8cd5-0acba3961833",
+              "name": "apikey",
+              "value": "={{ $('Contexto').first().json.apikey }}",
+              "type": "string"
+            },
+            {
+              "id": "f7d6d083-fc59-4b21-9646-008e0f7fd55a",
+              "name": "texto",
+              "value": "=Olá! 👋 Bem-vindo à *{{ $('Contexto').first().json.barbeariaNome }}* 💈\nPra começar, qual é o seu nome?",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "a5ca0bf9-49f6-4c14-bc2a-59b9a431ae32",
+      "name": "Msg boas-vindas",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        20592,
+        8736
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "let m = $('Mensagem').first().json.mensagem || '';\nm = m.replace(/^(meu nome (é|e)|me chamo|pode me chamar de|aqui (é|e) (o |a )?|sou (o |a )?)\\s*/i, '')\n     .replace(/[^\\p{L}\\s'-]/gu, '').trim().split(/\\s+/).slice(0, 3).join(' ');\nlet nome = m.split(' ').filter(Boolean).map(p => p.charAt(0).toUpperCase() + p.slice(1).toLowerCase()).join(' ');\nif (!nome) nome = 'Cliente';\nreturn [{ json: { nome } }];"
+      },
+      "id": "d634f4f3-1f65-4a0a-9e12-0ffef4874685",
+      "name": "Extrair nome",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20384,
+        8560
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "COLE_AQUI_O_ID_DA_SUA_PLANILHA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Clientes",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Instancia": "={{ $('Dados').first().json.instancia }}",
+            "Telefone": "={{ $('Dados').first().json.telefone }}",
+            "Nome": "={{ $('Extrair nome').first().json.nome }}",
+            "Status": "ativo"
+          },
+          "matchingColumns": [
+            "Telefone"
+          ],
+          "schema": [
+            {
+              "id": "Instancia",
+              "displayName": "Instancia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Telefone",
+              "displayName": "Telefone",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Nome",
+              "displayName": "Nome",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Status",
+              "displayName": "Status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Cadastrado em",
+              "displayName": "Cadastrado em",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "c6979b89-ca35-4a9c-ae19-c1c06053df49",
+      "name": "Atualizar cliente",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        20592,
+        8560
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "f593834b-b1a4-4000-ba56-0d771a3dd177",
+              "name": "numero",
+              "value": "={{ $('Dados').first().json.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "4ef844da-5e44-4899-b613-441196490626",
+              "name": "instancia",
+              "value": "={{ $('Contexto').first().json.instancia }}",
+              "type": "string"
+            },
+            {
+              "id": "578be550-fa43-4162-928c-dab6f4967ebc",
+              "name": "evolutionUrl",
+              "value": "={{ $('Contexto').first().json.evolutionUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "40bf3a4b-7347-4388-8b39-1d84ce57b97f",
+              "name": "apikey",
+              "value": "={{ $('Contexto').first().json.apikey }}",
+              "type": "string"
+            },
+            {
+              "id": "840f774a-2d81-4e93-bfda-064e9f5502bb",
+              "name": "texto",
+              "value": "=Prazer, {{ $('Extrair nome').first().json.nome }}! ✂️ Posso agendar, cancelar ou remarcar seu horário. O que você precisa?",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "64f921ee-65ec-44e6-96b6-aaaff8bbbe54",
+      "name": "Msg confirmação",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        20816,
+        8560
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "b4136760-884f-49b0-943f-f490ff0df1ab",
+              "name": "numero",
+              "value": "={{ $('Dados').first().json.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "0723dd24-467e-4543-8907-aaa720fd0532",
+              "name": "instancia",
+              "value": "={{ $('Contexto').first().json.instancia }}",
+              "type": "string"
+            },
+            {
+              "id": "0cacd853-d0e5-4c0f-ad28-3c7312d90708",
+              "name": "evolutionUrl",
+              "value": "={{ $('Contexto').first().json.evolutionUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "47ffa667-bf0c-402b-8ad8-d7a88582e220",
+              "name": "apikey",
+              "value": "={{ $('Contexto').first().json.apikey }}",
+              "type": "string"
+            },
+            {
+              "id": "52673679-295f-445c-a103-bf81578404dc",
+              "name": "texto",
+              "value": "Não consegui entender 😅 Pode escrever sua mensagem?",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "db41f34f-5e1a-406e-9347-86e4669f624c",
+      "name": "Msg vazio",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        20384,
+        8928
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "1d5f73ae-fad7-4edd-9aa4-1d278423a5a2",
+              "leftValue": "={{ $json.saudacao }}",
+              "rightValue": "",
+              "operator": {
+                "type": "boolean",
+                "operation": "true",
+                "singleValue": true
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "id": "1d3d6440-8105-4294-85b9-d51fe239d580",
+      "name": "Saudação simples?",
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        20384,
+        8224
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "7e5fa320-98b6-4780-8060-f0c04199dfbd",
+              "name": "numero",
+              "value": "={{ $('Dados').first().json.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "9b926f74-8abb-4601-880d-3132b1cd4c18",
+              "name": "instancia",
+              "value": "={{ $('Contexto').first().json.instancia }}",
+              "type": "string"
+            },
+            {
+              "id": "82ac1b00-c581-4a6b-966a-912621456cc3",
+              "name": "evolutionUrl",
+              "value": "={{ $('Contexto').first().json.evolutionUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "bcd14bdb-2237-456e-b564-b242ef78a235",
+              "name": "apikey",
+              "value": "={{ $('Contexto').first().json.apikey }}",
+              "type": "string"
+            },
+            {
+              "id": "69bdb4b3-06a0-4bbf-8ee4-024a76c4ec2f",
+              "name": "texto",
+              "value": "=Olá, {{ $('Definir status').first().json.nomeCliente }}! 💈 Posso ✂️ agendar, 📅 ver horários, ❌ cancelar, 🔁 remarcar ou mostrar as 🎁 promoções. O que você precisa?",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "b058b7ca-9a5c-4f66-8a25-2abd48626723",
+      "name": "Msg menu",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        20592,
+        8128
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensagem }}",
+        "options": {
+          "systemMessage": "=Você é o atendente virtual de uma barbearia no WhatsApp.\n\nRegras:\n- Respostas curtas e simpáticas, no máximo 0 emojis.\n- Só trate de agendar, consultar, cancelar, remarcar, promoções e dúvidas da barbearia.\n- Barbeiros: se houver mais de um, pergunte com quem o cliente prefere (se tanto faz, consulte a agenda de cada um e escolha um livre); se houver só um, não pergunte. Use barbeiro_num (número da lista) em todas as ferramentas de agenda.\n- Para agendar: saiba serviço, barbeiro, data e hora. Chame verificar_horario com o início e o fim exatos do serviço no barbeiro escolhido. Se available for true, crie o agendamento. Se for false, chame consultar_agenda UMA vez no dia (ela mostra só horários ocupados) e sugira 2 ou 3 alternativas livres dentro do expediente. Se o cliente não tem preferência de barbeiro, verifique o barbeiro 1 e só tente o 2 se estiver ocupado. Se o cliente perguntar quais horários estão livres, use consultar_agenda. Ao remarcar, verifique o novo horário com verificar_horario antes.\n- criar_agendamento: inicio e fim em ISO 8601 com -03:00 (fim = início + duração do serviço).\n- Cancelar/remarcar: chame buscar_agendamento_cliente para cada barbeiro (o título termina com o nome do barbeiro), confirme qual horário com o cliente e então use cancelar_agendamento ou remarcar_agendamento com o barbeiro_num daquele evento.\n- Promoções: use consultar_promocoes só se o cliente perguntar; ignore as vencidas.\n- Chame criar_agendamento, cancelar_agendamento e remarcar_agendamento no máximo UMA vez por pedido. Se a ferramenta devolver sucesso, não repita: apenas confirme.\n- Nunca invente horários, preços ou IDs. Depois de executar, confirme em 1 frase com dia, hora e barbeiro.\nResponda sempre em português do Brasil.\n\nDados da barbearia {{ $json.barbeariaNome }}:\nExpediente: {{ $json.horarios }}\nServiços (nome, minutos, preço): {{ $json.servicos }}\nBarbeiros: {{ $json.barbeirosTexto }}\n\nContexto desta conversa:\nCliente: {{ $json.nomeCliente }}\nAgora: {{ $now.setLocale('pt-BR').toFormat('cccc dd/LL/yyyy HH:mm') }} (America/Sao_Paulo, -03:00)",
+          "maxIterations": 8,
+          "returnIntermediateSteps": true
+        }
+      },
+      "id": "34ff59ad-24fc-4344-9f21-68a38691a4ed",
+      "name": "AI Agent",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        20592,
+        8336
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-120b",
+        "options": {
+          "maxTokensToSample": 2000,
+          "temperature": 0.2
+        }
+      },
+      "id": "c0c29ea8-a398-4564-aa61-be270aa5692f",
+      "name": "Groq Chat Model",
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        20464,
+        9104
+      ]
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $('Dados').first().json.instancia }}-{{ $('Dados').first().json.telefone }}",
+        "contextWindowLength": 4
+      },
+      "id": "75364a4d-95e5-46c1-a5f2-e9d346d2bea3",
+      "name": "Memória cliente",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        20592,
+        9104
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Retorna só início/fim dos horários OCUPADOS de um barbeiro no período. Consulte o dia inteiro.",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('Contexto').first().json.barbeiros[Number($fromAI('barbeiro_num', 'Numero do barbeiro conforme a lista', 'number')) - 1].calendarId }}",
+          "mode": "id"
+        },
+        "limit": 40,
+        "timeMin": "={{ $fromAI('inicio_periodo', 'Inicio do periodo em ISO 8601 com -03:00', 'string') }}",
+        "timeMax": "={{ $fromAI('fim_periodo', 'Fim do periodo em ISO 8601 com -03:00', 'string') }}",
+        "options": {
+          "fields": "items(start,end)",
+          "orderBy": "startTime"
+        }
+      },
+      "id": "c1ca9240-caed-4bb8-955a-16b0b7ed2e99",
+      "name": "consultar_agenda",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        20736,
+        9104
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Cria o agendamento no calendário do barbeiro. Só use após confirmar horário livre.",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('Contexto').first().json.barbeiros[Number($fromAI('barbeiro_num', 'Numero do barbeiro conforme a lista', 'number')) - 1].calendarId }}",
+          "mode": "id"
+        },
+        "start": "={{ $fromAI('inicio', 'Inicio ISO 8601 com -03:00', 'string') }}",
+        "end": "={{ $fromAI('fim', 'Fim ISO 8601 com -03:00', 'string') }}",
+        "additionalFields": {
+          "description": "=Tel: {{ $('Dados').first().json.telefone }}\nInst: {{ $('Dados').first().json.instancia }}",
+          "summary": "={{ $fromAI('nome', 'Nome do cliente', 'string') }} - {{ $fromAI('servico', 'Servico escolhido', 'string') }} - {{ $('Contexto').first().json.barbeiros[Number($fromAI('barbeiro_num', 'Numero do barbeiro conforme a lista', 'number')) - 1].nome }}"
+        }
+      },
+      "id": "e6f845f7-7d30-41f2-953d-bc4ee87d854f",
+      "name": "criar_agendamento",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        20880,
+        9104
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Lista os próximos agendamentos deste cliente no calendário de um barbeiro (id, título, início, fim).",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ ($('Contexto').first().json.barbeiros.find(b => b.n === Number($fromAI('barbeiro_num', 'Numero do barbeiro conforme a lista', 'number'))) || $('Contexto').first().json.barbeiros[0]).calendarId }}",
+          "mode": "id"
+        },
+        "limit": 10,
+        "timeMin": "={{ $now.toISO() }}",
+        "timeMax": "={{ $now.plus({ days: 60 }).toISO() }}",
+        "options": {
+          "fields": "items(id,summary,start,end)",
+          "orderBy": "startTime",
+          "query": "={{ $('Dados').first().json.telefone }}"
+        }
+      },
+      "id": "f9127e80-d3d7-4d1b-8ddc-34ee5c2d1be8",
+      "name": "buscar_agendamento_cliente",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        21024,
+        9104
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Cancela um agendamento pelo event_id (de buscar_agendamento_cliente) e barbeiro_num do evento.",
+        "operation": "delete",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('Contexto').first().json.barbeiros[Number($fromAI('barbeiro_num', 'Numero do barbeiro conforme a lista', 'number')) - 1].calendarId }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $fromAI('event_id', 'ID do evento a cancelar', 'string') }}",
+        "options": {
+          "sendUpdates": "none"
+        }
+      },
+      "id": "c1815e86-0e7c-4feb-9ca4-7854cdd16668",
+      "name": "cancelar_agendamento",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        21152,
+        9104
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Remarca um agendamento (event_id e barbeiro_num do evento) para novo início/fim livres.",
+        "operation": "update",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('Contexto').first().json.barbeiros[Number($fromAI('barbeiro_num', 'Numero do barbeiro conforme a lista', 'number')) - 1].calendarId }}",
+          "mode": "id"
+        },
+        "eventId": "={{ $fromAI('event_id', 'ID do evento a remarcar', 'string') }}",
+        "updateFields": {
+          "end": "={{ $fromAI('fim', 'Novo fim ISO 8601 com -03:00', 'string') }}",
+          "start": "={{ $fromAI('inicio', 'Novo inicio ISO 8601 com -03:00', 'string') }}"
+        }
+      },
+      "id": "3a2e9dc4-0306-458b-9bf0-ae2063299b40",
+      "name": "remarcar_agendamento",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        21296,
+        9104
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Lista as promoções ativas desta barbearia (titulo, descricao, validade).",
+        "documentId": {
+          "__rl": true,
+          "value": "COLE_AQUI_O_ID_DA_SUA_PLANILHA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Promocoes",
+          "mode": "name"
+        },
+        "filtersUI": {
+          "values": [
+            {
+              "lookupColumn": "Instancia",
+              "lookupValue": "={{ $('Contexto').first().json.instancia }}"
+            },
+            {
+              "lookupColumn": "ativa",
+              "lookupValue": "sim"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "cc60d96e-9343-4983-8ae5-c6621064953c",
+      "name": "consultar_promocoes",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        21648,
+        9104
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "d2eb3c1e-1f40-4dac-b048-d4813b56455d",
+              "name": "numero",
+              "value": "={{ $('Dados').first().json.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "afc3f445-6e33-4bbc-812f-526e0530901f",
+              "name": "instancia",
+              "value": "={{ $('Contexto').first().json.instancia }}",
+              "type": "string"
+            },
+            {
+              "id": "04c80c22-84cf-4bef-b88b-1ed5f2e299cf",
+              "name": "evolutionUrl",
+              "value": "={{ $('Contexto').first().json.evolutionUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "e480a4a8-0748-4fee-9dea-2dea9deaf2f6",
+              "name": "apikey",
+              "value": "={{ $('Contexto').first().json.apikey }}",
+              "type": "string"
+            },
+            {
+              "id": "f5833a70-77ab-443e-913f-693830d8f5d7",
+              "name": "texto",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "279e8e11-1f0d-4238-a527-62de410acc59",
+      "name": "Msg resposta",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        20960,
+        8240
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const ctx = $('Contexto').first().json;\nconst tel = ctx.telefone;\nconst steps = $input.first().json.intermediateSteps || [];\nconst parse = (v) => { if (typeof v === 'string') { try { return JSON.parse(v); } catch (e) { return v; } } return v; };\nconst fmt = (iso) => {\n  if (!iso) return '?';\n  const d = DateTime.fromISO(iso, { zone: 'America/Sao_Paulo' }).setLocale('pt-BR');\n  return d.isValid ? d.toFormat(\"ccc dd/LL 'às' HH:mm\") : iso;\n};\nconst falhou = (obs) => /error|erro|exception|failed/i.test(typeof obs === 'string' ? obs : JSON.stringify(obs ?? ''));\nconst eventos = {};\nconst coletar = (o) => {\n  if (!o || typeof o !== 'object') return;\n  if (Array.isArray(o)) { o.forEach(x => coletar(x)); return; }\n  if (o.id && (o.summary || o.start)) eventos[o.id] = o;\n  Object.values(o).forEach(x => coletar(x));\n};\nsteps.filter(s => s.action?.tool === 'buscar_agendamento_cliente').forEach(s => coletar(parse(s.observation)));\nconst nomeBarbeiro = (n) => (ctx.barbeiros.find(b => b.n === Number(n)) || {}).nome || '?';\nconst msgs = [];\nfor (const s of steps) {\n  const tool = s.action?.tool;\n  const input = parse(s.action?.toolInput) || {};\n  if (falhou(s.observation)) continue;\n  const ev = eventos[input.event_id] || {};\n  const titulo = ev.summary || ('ID ' + (input.event_id || '?'));\n  const antes = fmt(ev.start?.dateTime || ev.start);\n  const barb = nomeBarbeiro(input.barbeiro_num);\n  if (tool === 'criar_agendamento') {\n    msgs.push(`🆕 *Novo agendamento*\\n👤 ${input.nome || '?'}\\n✂️ ${input.servico || '?'}\\n💈 ${barb}\\n🕒 ${fmt(input.inicio)}\\n📱 ${tel}`);\n  } else if (tool === 'cancelar_agendamento') {\n    msgs.push(`❌ *Agendamento cancelado*\\n📋 ${titulo}\\n🕒 ${antes}\\n📱 ${tel}`);\n  } else if (tool === 'remarcar_agendamento') {\n    msgs.push(`🔁 *Agendamento remarcado*\\n📋 ${titulo}\\n🕒 De ${antes} para ${fmt(input.inicio)}\\n📱 ${tel}`);\n  }\n}\nconst out = [];\nfor (const texto of msgs) for (const numero of ctx.adminPhones)\n  out.push({ json: { numero, instancia: ctx.instancia, evolutionUrl: ctx.evolutionUrl, apikey: ctx.apikey, texto } });\nreturn out;"
+      },
+      "id": "9fb31340-53a8-4ccf-b1a8-61cb78a56bfc",
+      "name": "Detectar ações (admin)",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        20960,
+        8400
+      ]
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.mensagem }}",
+        "options": {
+          "systemMessage": "=Você atende o ADMINISTRADOR de uma barbearia no WhatsApp.\n\nVocê pode:\n- Informar o horário de atendimento (use o Expediente).\n- Mostrar a agenda do dia ou de outra data: use agenda_barbeiro, um barbeiro por vez com barbeiro_num, e apresente em lista curta com hora e cliente.\n- Cadastrar promoção: use cadastrar_promocao com título, descrição e validade. Se faltar algo, pergunte.\n- Listar promoções: use consultar_promocoes.\nRespostas curtas e objetivas. Nunca invente dados.\nResponda sempre em português do Brasil.\n\nDados da barbearia {{ $json.barbeariaNome }}:\nExpediente: {{ $json.horarios }}\nBarbeiros: {{ $json.barbeirosTexto }}\n\nContexto desta conversa:\nAgora: {{ $now.setLocale('pt-BR').toFormat('cccc dd/LL/yyyy HH:mm') }} (America/Sao_Paulo, -03:00)",
+          "maxIterations": 6
+        }
+      },
+      "id": "6ca9eae0-1a33-4495-a5bb-851190eb9fff",
+      "name": "AI Agent Admin",
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 1.7,
+      "position": [
+        20384,
+        9360
+      ],
+      "retryOnFail": true,
+      "maxTries": 2,
+      "waitBetweenTries": 5000,
+      "onError": "continueErrorOutput"
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "=adm-{{ $('Dados').first().json.instancia }}-{{ $('Dados').first().json.telefone }}",
+        "contextWindowLength": 6
+      },
+      "id": "88994414-2e59-4f74-b02f-f80c350976d8",
+      "name": "Memória admin",
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        20384,
+        9584
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Lista os agendamentos (título, início, fim) de um barbeiro no período informado.",
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $('Contexto').first().json.barbeiros[Number($fromAI('barbeiro_num', 'Numero do barbeiro conforme a lista', 'number')) - 1].calendarId }}",
+          "mode": "id"
+        },
+        "limit": 40,
+        "timeMin": "={{ $fromAI('inicio_periodo', 'Inicio do periodo em ISO 8601 com -03:00', 'string') }}",
+        "timeMax": "={{ $fromAI('fim_periodo', 'Fim do periodo em ISO 8601 com -03:00', 'string') }}",
+        "options": {
+          "fields": "items(summary,start,end)",
+          "orderBy": "startTime"
+        }
+      },
+      "id": "0c552305-9198-420a-b7f7-abfe449d07c1",
+      "name": "agenda_barbeiro",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        20512,
+        9584
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Cadastra uma promoção da barbearia (titulo, descricao e validade).",
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "COLE_AQUI_O_ID_DA_SUA_PLANILHA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Promocoes",
+          "mode": "name"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "Instancia": "={{ $('Contexto').first().json.instancia }}",
+            "Titulo": "={{ $fromAI('titulo', 'Titulo curto da promocao', 'string') }}",
+            "Desclicao": "={{ $fromAI('descricao', 'Descricao da promocao', 'string') }}",
+            "Validade": "={{ $fromAI('validade', 'Validade em texto como ate 31/10', 'string') }}",
+            "ativa": "sim"
+          },
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "Instancia",
+              "displayName": "Instancia",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Titulo",
+              "displayName": "Titulo",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Desclicao",
+              "displayName": "Desclicao",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "Validade",
+              "displayName": "Validade",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "ativa",
+              "displayName": "ativa",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "id": "f10e797f-cca9-472c-bb70-a33e382b994d",
+      "name": "cadastrar_promocao",
+      "type": "n8n-nodes-base.googleSheetsTool",
+      "typeVersion": 4.5,
+      "position": [
+        20656,
+        9584
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "291283f6-3a48-4435-b564-8e443bb6c1f1",
+              "name": "numero",
+              "value": "={{ $('Dados').first().json.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "a7898246-5eef-49b7-9492-8b466a8cef3a",
+              "name": "instancia",
+              "value": "={{ $('Contexto').first().json.instancia }}",
+              "type": "string"
+            },
+            {
+              "id": "527564d5-18c2-49c6-93e5-87d0556b3be1",
+              "name": "evolutionUrl",
+              "value": "={{ $('Contexto').first().json.evolutionUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "e7607c54-8fdc-4883-9cf9-c045c4baf3a7",
+              "name": "apikey",
+              "value": "={{ $('Contexto').first().json.apikey }}",
+              "type": "string"
+            },
+            {
+              "id": "b347b437-df74-48bb-b71d-122b73248dde",
+              "name": "texto",
+              "value": "={{ $json.output }}",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "4c84dde3-fa5f-4376-9dad-3d3673829555",
+      "name": "Msg resposta admin",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        20656,
+        9360
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "COLE_AQUI_O_ID_DA_SUA_PLANILHA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Barbearias",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "ed595b15-99e6-4376-aa3f-c9433f902e7d",
+      "name": "Ler barbearias (lembretes)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        17056,
+        9600
+      ]
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "COLE_AQUI_O_ID_DA_SUA_PLANILHA",
+          "mode": "id"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "Barbeiros",
+          "mode": "name"
+        },
+        "options": {}
+      },
+      "id": "c4659ec2-3aa4-4916-a9dd-4bb8c8273038",
+      "name": "Ler barbeiros (lembretes)",
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.5,
+      "position": [
+        17280,
+        9600
+      ],
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ $json[Object.keys($json).find(k => k.toLowerCase().replace(/[\\s_]/g, '') === 'calendarid')] }}",
+          "mode": "id"
+        },
+        "timeMin": "={{ $now.plus({ hours: 2 }).toISO() }}",
+        "timeMax": "={{ $now.plus({ hours: 3 }).toISO() }}",
+        "options": {
+          "orderBy": "startTime"
+        }
+      },
+      "id": "8cbadef7-e74c-469b-bfeb-8911354af7fd",
+      "name": "Próximos agendamentos",
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        17488,
+        9600
+      ]
+    },
+    {
+      "parameters": {
+        "jsCode": "const norm = (r) => { const o = {}; for (const k of Object.keys(r || {})) o[k.toLowerCase().replace(/[\\s_]/g, '')] = r[k]; return o; };\nconst barbearias = $('Ler barbearias (lembretes)').all().map(i => norm(i.json));\nconst from = DateTime.now().plus({ hours: 2 });\nconst to = DateTime.now().plus({ hours: 3 });\nconst out = [];\nfor (const it of $input.all()) {\n  const ev = it.json;\n  const s = ev.start?.dateTime;\n  if (!s) continue;\n  const st = DateTime.fromISO(s);\n  if (st < from || st >= to) continue;\n  const desc = ev.description || '';\n  const tel = desc.match(/Tel:\\s*(\\d{10,15})/);\n  const inst = desc.match(/Inst:\\s*(\\S+)/);\n  if (!tel || !inst) continue;\n  const bar = barbearias.find(b => String(b.instancia).trim().toLowerCase() === inst[1].toLowerCase());\n  if (!bar || !bar.evolutionurl || !bar.apikey) continue;\n  const partes = (ev.summary || '').split(' - ');\n  const nome = partes[0] || 'cliente';\n  const barbeiro = partes[2] ? ` com ${partes[2]}` : '';\n  const hora = st.setZone('America/Sao_Paulo').toFormat('HH:mm');\n  out.push({ json: { numero: tel[1], instancia: inst[1],\n    evolutionUrl: String(bar.evolutionurl).trim().replace(/\\/+$/, ''), apikey: String(bar.apikey).trim(),\n    texto: `Oi, ${nome}! 💈 Lembrete: seu horário na ${bar.nome || 'barbearia'}${barbeiro} é hoje às ${hora}. Se não puder vir, é só avisar por aqui.` } });\n}\nreturn out;"
+      },
+      "id": "3880f264-cf35-4b37-981d-dec121889ff7",
+      "name": "Montar lembretes",
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        17712,
+        9600
+      ]
+    },
+    {
+      "parameters": {
+        "method": "POST",
+        "url": "={{ $json.evolutionUrl }}/message/sendText/{{ $json.instancia }}",
+        "sendHeaders": true,
+        "headerParameters": {
+          "parameters": [
+            {
+              "name": "apikey",
+              "value": "={{ $json.apikey }}"
+            }
+          ]
+        },
+        "sendBody": true,
+        "specifyBody": "json",
+        "jsonBody": "={{ JSON.stringify({ number: $json.numero, text: $json.texto }) }}",
+        "options": {}
+      },
+      "id": "9e2601d5-1a85-45fa-9ee0-90370283f747",
+      "name": "Enviar WhatsApp",
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        21232,
+        8400
+      ]
+    },
+    {
+      "parameters": {
+        "operation": "removeItemsSeenInPreviousExecutions",
+        "dedupeValue": "={{ $json.msgId }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.removeDuplicates",
+      "typeVersion": 2,
+      "position": [
+        17280,
+        8400
+      ],
+      "id": "e89dbc9d-b77e-42ba-9325-2a89939082b5",
+      "name": "Remove Duplicates"
+    },
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "barbearia",
+        "options": {}
+      },
+      "id": "958c9360-8f83-484c-a00b-c3b3f2fa98d0",
+      "name": "Webhook",
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2,
+      "position": [
+        16816,
+        8400
+      ]
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "a1f0c1d2-0001-4a00-9000-000000000001",
+              "name": "numero",
+              "value": "={{ $('Dados').first().json.telefone }}",
+              "type": "string"
+            },
+            {
+              "id": "a1f0c1d2-0002-4a00-9000-000000000002",
+              "name": "instancia",
+              "value": "={{ $('Contexto').first().json.instancia }}",
+              "type": "string"
+            },
+            {
+              "id": "a1f0c1d2-0003-4a00-9000-000000000003",
+              "name": "evolutionUrl",
+              "value": "={{ $('Contexto').first().json.evolutionUrl }}",
+              "type": "string"
+            },
+            {
+              "id": "a1f0c1d2-0004-4a00-9000-000000000004",
+              "name": "apikey",
+              "value": "={{ $('Contexto').first().json.apikey }}",
+              "type": "string"
+            },
+            {
+              "id": "a1f0c1d2-0005-4a00-9000-000000000005",
+              "name": "texto",
+              "value": "Tive um probleminha para processar sua mensagem 😅 Pode tentar de novo em alguns minutos?",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "id": "c7bea7e8-a000-41b7-bd6a-6d68d7c1914d",
+      "name": "Msg erro IA",
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        21344,
+        8624
+      ]
+    },
+    {
+      "parameters": {
+        "descriptionType": "manual",
+        "toolDescription": "Verifica se um horário específico está livre na agenda de um barbeiro. Retorna available true ou false.",
+        "resource": "calendar",
+        "calendar": {
+          "__rl": true,
+          "value": "={{ ($('Contexto').first().json.barbeiros.find(b => b.n === Number($fromAI('barbeiro_num', 'Numero do barbeiro conforme a lista', 'number'))) || $('Contexto').first().json.barbeiros[0]).calendarId }}",
+          "mode": "id"
+        },
+        "timeMin": "={{ $fromAI('inicio', 'Inicio do servico em ISO 8601 com -03:00', 'string') }}",
+        "timeMax": "={{ $fromAI('fim', 'Fim do servico em ISO 8601 com -03:00', 'string') }}",
+        "options": {
+          "outputFormat": "availability"
+        }
+      },
+      "id": "2d640d4e-a495-4db2-ad1d-20d0431d8704",
+      "name": "verificar_horario",
+      "type": "n8n-nodes-base.googleCalendarTool",
+      "typeVersion": 1.3,
+      "position": [
+        21472,
+        9104
+      ]
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Dados": {
+      "main": [
+        [
+          {
+            "node": "Remove Duplicates",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ignorar próprias/grupos": {
+      "main": [
+        [
+          {
+            "node": "Ler barbearia",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler barbearia": {
+      "main": [
+        [
+          {
+            "node": "Ler barbeiros",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler barbeiros": {
+      "main": [
+        [
+          {
+            "node": "Ler admins",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler admins": {
+      "main": [
+        [
+          {
+            "node": "Buscar cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Buscar cliente": {
+      "main": [
+        [
+          {
+            "node": "Contexto",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Contexto": {
+      "main": [
+        [
+          {
+            "node": "É áudio?",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "É áudio?": {
+      "main": [
+        [
+          {
+            "node": "Baixar áudio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Baixar áudio": {
+      "main": [
+        [
+          {
+            "node": "Base64 para arquivo",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Base64 para arquivo": {
+      "main": [
+        [
+          {
+            "node": "Transcrever (Groq Whisper)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Transcrever (Groq Whisper)": {
+      "main": [
+        [
+          {
+            "node": "Mensagem",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Mensagem": {
+      "main": [
+        [
+          {
+            "node": "Definir status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Definir status": {
+      "main": [
+        [
+          {
+            "node": "Status",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Status": {
+      "main": [
+        [
+          {
+            "node": "Saudação simples?",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Extrair nome",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Cadastrar cliente",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Msg vazio",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent Admin",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Saudação simples?": {
+      "main": [
+        [
+          {
+            "node": "Msg menu",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extrair nome": {
+      "main": [
+        [
+          {
+            "node": "Atualizar cliente",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Atualizar cliente": {
+      "main": [
+        [
+          {
+            "node": "Msg confirmação",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Cadastrar cliente": {
+      "main": [
+        [
+          {
+            "node": "Msg boas-vindas",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Msg resposta",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Detectar ações (admin)",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Msg erro IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent Admin": {
+      "main": [
+        [
+          {
+            "node": "Msg resposta admin",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Msg erro IA",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          },
+          {
+            "node": "AI Agent Admin",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória cliente": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Memória admin": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent Admin",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_agenda": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "criar_agendamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "buscar_agendamento_cliente": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cancelar_agendamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "remarcar_agendamento": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "consultar_promocoes": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          },
+          {
+            "node": "AI Agent Admin",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "agenda_barbeiro": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent Admin",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "cadastrar_promocao": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent Admin",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Msg boas-vindas": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Msg confirmação": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Msg vazio": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Msg menu": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Msg resposta": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Msg resposta admin": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Detectar ações (admin)": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Montar lembretes": {
+      "main": [
+        [
+          {
+            "node": "Enviar WhatsApp",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Lembretes (a cada hora)": {
+      "main": [
+        [
+          {
+            "node": "Ler barbearias (lembretes)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler barbearias (lembretes)": {
+      "main": [
+        [
+          {
+            "node": "Ler barbeiros (lembretes)",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ler barbeiros (lembretes)": {
+      "main": [
+        [
+          {
+            "node": "Próximos agendamentos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Próximos agendamentos": {
+      "main": [
+        [
+          {
+            "node": "Montar lembretes",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Remove Duplicates": {
+      "main": [
+        [
+          {
+            "node": "Ignorar próprias/grupos",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "Dados",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "verificar_horario": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate"
+  },
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "nodeGroups": [],
+  "tags": []
+}
